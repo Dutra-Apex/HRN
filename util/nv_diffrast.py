@@ -48,7 +48,7 @@ class MeshRenderer(nn.Module):
                 rasterize_fov,
                 znear=0.1,
                 zfar=10, 
-                rasterize_size=224):
+                rasterize_size=256):
         super(MeshRenderer, self).__init__()
 
         x = np.tan(np.deg2rad(rasterize_fov * 0.5)) * znear
