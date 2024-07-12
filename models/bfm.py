@@ -66,7 +66,7 @@ class ParametricFaceModel:
         self.tex_base_uv = np.load('assets/3dmm_assets/bfm_albedo_map_basis/bfm_texmap_base2.npy')
         self.tex_base_uv = self.tex_base_uv.reshape((-1, 80))
         set_rasterizer('pytorch3d')
-        self.render = SRenderY(224, uv_size=256,
+        self.render = SRenderY(224, uv_size=512, #256,
                                rasterizer_type='pytorch3d').to(torch.device('cuda'))
 
         # face indices for each vertex that lies in. starts from 0. [N,8]

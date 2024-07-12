@@ -15,6 +15,8 @@ from pix2pix.pix2pix_model import Pix2PixModel
 from pix2pix.pix2pix_options import Pix2PixOptions
 import imageio
 
+### 
+rasterize_size = 512
 
 class FaceReconModel(BaseModel):
 
@@ -346,13 +348,13 @@ class FaceReconModel(BaseModel):
         if visualize:
             self.tex_valid_mask = self.smooth_valid_mask(self.tex_valid_mask)
         tex_valid_mask = self.tex_valid_mask  # (B, 1, 256, 256)
-        tex_valid_mask_mid = torch.nn.functional.interpolate(tex_valid_mask, (64, 64), mode='bilinear')
+        tex_valid_mask_mid = torch.nn.functional.interpolate(tex_valid_mask, (64, 64), mode='bilinear')  # (64, 64)
 
         # mid frequency
         texture_map_input = self.texture_map.permute(0, 3, 1, 2).to(self.device)
         texture_map_input = (texture_map_input - 0.5) * 2
-        texture_map_input_mid = torch.nn.functional.interpolate(texture_map_input, (64, 64), mode='bilinear')
-        position_map_input_mid = torch.nn.functional.interpolate(self.position_map, (64, 64), mode='bilinear')
+        texture_map_input_mid = torch.nn.functional.interpolate(texture_map_input, (64, 64), mode='bilinear') # (64, 64)
+        position_map_input_mid = torch.nn.functional.interpolate(self.position_map, (64, 64), mode='bilinear') # (64, 64)
         input_mid = torch.cat([position_map_input_mid, texture_map_input_mid], dim=1)
         self.deformation_map = self.mid_net(input_mid) * 0.1 * self.alpha  # ori * 0.1 * self.alpha
         self.deformation_map = self.deformation_map * tex_valid_mask_mid
@@ -373,8 +375,8 @@ class FaceReconModel(BaseModel):
         texture_map_input_high = (texture_map_input_high - 0.5) * 2
 
         # high frequency
-        position_map_input_high = torch.nn.functional.interpolate(self.position_map, (256, 256), mode='bilinear')
-        deformation_map_input_high = torch.nn.functional.interpolate(self.deformation_map, (256, 256), mode='bilinear')
+        position_map_input_high = torch.nn.functional.interpolate(self.position_map, (512, 512), mode='bilinear') # (256, 256)
+        deformation_map_input_high = torch.nn.functional.interpolate(self.deformation_map, (512, 512), mode='bilinear') # (256, 256)
         input_high = torch.cat([position_map_input_high, texture_map_input_high, deformation_map_input_high], dim=1)
         self.displacement_map = self.high_net(input_high) * 0.1 * self.beta  # ori * 0.1 * self.alpha
         self.displacement_map = self.displacement_map * tex_valid_mask
@@ -400,7 +402,7 @@ class FaceReconModel(BaseModel):
 
             # fit texture
             with torch.enable_grad():
-                texture_offset = torch.zeros((1, 3, 256, 256), dtype=torch.float32).to(
+                texture_offset = torch.zeros((1, 3, 512, 512), dtype=torch.float32).to( # (1, 3, 256, 256)
                     self.device)
                 texture_offset.requires_grad = True
 
